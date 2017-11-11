@@ -36,3 +36,7 @@ app.post('/cup/sip', function(req, res) {
   console.log('You sipped!');
   res.end('ok');
 });
+
+app.get('/cup/commands', function(req, res) {
+  res.json({dipping: false});
+});
