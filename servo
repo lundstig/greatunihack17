@@ -1,0 +1,42 @@
+
+#include <Servo.h>
+
+Servo myservo; 
+
+int time = millis();
+int dip_delay = 2000;
+int up = 120;
+int down = 20;
+boolean dip = 1;
+boolean servo_position = 0;
+
+void setup() {
+  myservo.attach(25);  // attaches the servo on pin 9 to the servo object
+}
+
+void loop(){
+
+  if(dip == 1){
+  dip();
+  }
+  
+
+}
+
+
+void dip() {
+
+  int now = millis();
+  
+  if(now - time > dip_delay && ){
+    if(servo_position == 1){
+    myservo.write(down);
+    servo_position = 0;
+   }
+    if(servo_position == 0){
+    myservo.write(up);
+    servo_position = 1;
+   }
+  time = now;
+  }
+}
