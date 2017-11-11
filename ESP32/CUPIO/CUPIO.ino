@@ -77,18 +77,40 @@ void loop(){
   
   delay(100);
   
-  WiFiClient client;
-  if (!client.connect("10.42.0.1", HTTP_PORT)) {
-    Serial.println("connection failed");
-    return;
+  HTTPClient http;
+
+
+  if(WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
+ 
+   HTTPClient http;   
+ 
+   http.begin("http://10.42.0.1:3000/cup/temp");  //Specify destination for HTTP request
+   http.addHeader("Content-Type", "application/json");             //Specify content-type header
+ 
+   int httpResponseCode = http.POST(String("{\"temp\":")+temperature + "}");   //Send the actual POST request
+ 
+   if(httpResponseCode>0){
+ 
+      String response = http.getString();                       //Get the response to the request
+ 
+      Serial.println(httpResponseCode);   //Print return code
+      Serial.println(response);           //Print request answer
+ 
+   }else{
+ 
+      Serial.print("Error on sending POST: ");
+      Serial.println(httpResponseCode);
+ 
+   }
+ 
+   http.end();  //Free resources
+ 
+  }else{
+ 
+    Serial.println("Error in WiFi connection");   
+ 
   }
-  
-  String url = "/cup/temp";
-  
-  client.print(String("POST ") + url + " HTTP/1.1\r\n" +
-                 "Host: " + host + "\r\n" +
-                 "Connection: close\r\n\r\n");
-  
+ 
   delay(1000);
               
 
