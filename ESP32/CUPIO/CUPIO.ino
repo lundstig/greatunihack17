@@ -6,8 +6,13 @@
 
 #define TEMP_PIN 33
 #define SERVO_PIN 25
+
 #define UP_ANGLE 160
 #define DOWN_ANGLE 60
+
+#define TEMP_COEFF 1.045
+
+#define HTTP_PORT 3000
 
 MMA7660 accelemeter;
 Servo myservo; 
@@ -19,9 +24,17 @@ boolean dip = 0;
 boolean servo_position = 0;
 
 
+
+boolean tilt = 0;
+boolean sip = 0;
+
+
 const char* ssid     = "NSA-data-collection-van-#42";
 const char* password = "cupio2017";
 
+
+
+const char* host = "data.sparkfun.com";
 
 void setup() {
   Serial.begin(115200);
@@ -49,13 +62,42 @@ void setup() {
 }
 
 void loop(){
+  
 
   if(dip == 1){
   dipf();
   }
-  Serial.println(time2);
+  
   getAngels();
+  if(( y > 10 || y < 40) && tilt == 0){
+    tilt = 1;
+    sip = 1;
+  } else if(( y < 10 || y > 40 ) && tilt == 1){
+    tilt = 0;
+    sip = 0;
+  }
+
+
+
+  Serial.print("Temperature: ");
+  Serial.println(getTemperature());
   delay(100);
+  
+  WiFiClient client;
+  if (!client.connect("10.42.0.1", HTTP_PORT)) {
+    Serial.println("connection failed");
+    return;
+  }
+  
+  String url = "/cup/temp";
+  
+  client.print(String("POST ") + url + " HTTP/1.1\r\n" +
+                 "Host: " + host + "\r\n" +
+                 "Connection: close\r\n\r\n");
+  
+  
+              
+
 
 
 
@@ -68,15 +110,30 @@ void getAngels(){
   int8_t z;
   float ax,ay,az;
   accelemeter.getXYZ(&x,&y,&z);
-
   
-  
-  Serial.print("x = ");
-    Serial.println(x); 
-    Serial.print("y = ");
-    Serial.println(y);   
-    Serial.print("z = ");
-    Serial.println(z);
+//  double xa = doubleMap(x, 0, 64, 0, 2*PI);
+//  double ya = doubleMap(y, 0, 64, 0, 2*PI);
+//  double za = doubleMap(z, 0, 64, 0, 2*PI);
+//
+//  Serial.println("     cos  \t sin");
+//  Serial.print("x = ");
+//  Serial.print(cos(xa));
+//  Serial.print("\t");
+//  Serial.print(sin(xa));
+//  Serial.println(); 
+//
+//  Serial.print("y = ");
+//  Serial.print(cos(ya));
+//  Serial.print("\t");
+//  Serial.print(sin(ya));
+//  Serial.println(); 
+//
+//  Serial.print("z = ");
+//  Serial.print(cos(za));
+//  Serial.print("\t");
+//  Serial.print(sin(za));
+//  Serial.println(); 
+    
 
 }
 
@@ -84,11 +141,14 @@ void getAngels(){
 double getTemperature(void){
   int sensorValue = analogRead(TEMP_PIN);
   double Vout = (3.300) * sensorValue/ 4096.0;
-  
-  return (Vout-1.045)/0.005;  
+  return (Vout-TEMP_COEFF)/0.005;  
 }
 
 
+double doubleMap(double x, double in_min, double in_max, double out_min, double out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 
 
@@ -107,4 +167,3 @@ void dipf() {
   time2 = now;
   }
 }
-
