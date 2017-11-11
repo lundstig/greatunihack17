@@ -1,0 +1,35 @@
+* {
+	font-family: 'Jura', sans-serif;
+	background-color: white;
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+}
+
+.logo {
+	width: 20%;
+}
+
+.when {
+    color: white;
+    background:	#7FFFD4;
+}
+
+.figure-flex {
+	display: flex;
+	justify-content: space-around;
+	margin: 0px;
+}
+
+.fig {
+	width: 33%;
+}
+@media screen and (max-width: 1000px) {
+  .figure-flex {
+    flex-direction: column;
+  }
+
+  .fig {
+    width: 100%;
+  }
+}
