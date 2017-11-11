@@ -8,17 +8,19 @@
 #define TEMP_PIN 33
 #define SERVO_PIN 25
 
-#define UP_ANGLE 120
-#define DOWN_ANGLE 60
-#define OUT_ANGLE 50
+#define UP_ANGLE 70
+#define DOWN_ANGLE 140
+#define OUT_ANGLE 30
 #define TEMP_COEFF 1.045
+
+#define WIFI_DELAY 1000
 
 #define HTTP_PORT 3000
 
 MMA7660 accelemeter;
 Servo myservo; 
 
-int dip_delay = 2000;
+int dip_delay = 1000;
 
 boolean dip = 0;
 boolean servo_position = 0;
@@ -57,9 +59,12 @@ void setup() {
 }
 
 void loop(){
+  static int wifiTimer = millis();
+
+  
   boolean sip = 0;
   double temperature = 0;
-  static boolean pulled_out = 1;
+  static boolean pulled_out = 0;
 
   if(dip == 1){
   pulled_out = 0;
@@ -71,54 +76,60 @@ void loop(){
 
   }
 
-  sip= getSips();
+ 
+
   
-  temperature = getTemperature();
-
-
-  Serial.print("Temperature: ");
-  Serial.println(temperature);
-  Serial.print("sip:");
-  Serial.println(sip);
+  int now = millis();
   
-  delay(100);
-  
-  HTTPClient http;
-
-
-  if(WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
- 
-   HTTPClient http;   
- 
-   http.begin("http://10.42.0.1:3000/cup/temp");  //Specify destination for HTTP request
-   http.addHeader("Content-Type", "application/json");             //Specify content-type header
- 
-   int httpResponseCode = http.POST(String("{\"temp\":")+temperature + "}");   //Send the actual POST request
- 
-   if(httpResponseCode>0){
- 
-      String response = http.getString();                       //Get the response to the request
- 
-      Serial.println(httpResponseCode);   //Print return code
-      Serial.println(response);           //Print request answer
- 
-   }else{
- 
-      Serial.print("Error on sending POST: ");
-      Serial.println(httpResponseCode);
- 
-   }
- 
-   http.end();  //Free resources
- 
-  }else{
- 
-    Serial.println("Error in WiFi connection");   
- 
+  if((now - wifiTimer) > WIFI_DELAY) {
+     sip= getSips();
+      
+      temperature = getTemperature();
+    
+    
+      Serial.print("Temperature: ");
+      Serial.println(temperature);
+      Serial.print("sip:");
+      Serial.println(sip);
+      
+      delay(100);
+      
+      HTTPClient http;
+    
+    
+    if (WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
+     wifiTimer = now;
+     HTTPClient http;   
+   
+     http.begin("http://10.42.0.1:3000/cup/temp");  //Specify destination for HTTP request
+     http.addHeader("Content-Type", "application/json");             //Specify content-type header
+   
+     int httpResponseCode = http.POST(String("{\"temp\":")+temperature + "}");   //Send the actual POST request
+   
+     if(httpResponseCode>0){
+   
+        String response = http.getString();                       //Get the response to the request
+   
+        Serial.println(httpResponseCode);   //Print return code
+        Serial.println(response);           //Print request answer
+   
+     }else{
+   
+        Serial.print("Error on sending POST: ");
+        Serial.println(httpResponseCode);
+   
+     }
+   
+     http.end();  //Free resources
+   
+    }else{
+   
+      Serial.println("Error in WiFi connection");   
+   
+    }
   }
  
-  delay(1000);
-              
+ 
 
 
 
@@ -200,10 +211,10 @@ void dipf() {
   
   if(now - time2 > dip_delay ){
     if(servo_position == 1){
-    myservo.write(DOWN_ANGLE);
+    myservo.write(UP_ANGLE);
     servo_position = 0;
    } else if(servo_position == 0){
-    myservo.write(UP_ANGLE);
+    myservo.write(DOWN_ANGLE);
     servo_position = 1;
    }
   time2 = now;
