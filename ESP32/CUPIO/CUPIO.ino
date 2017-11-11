@@ -61,59 +61,53 @@ void setup() {
 void loop(){
   static int wifiTimer = millis();
 
-  
   boolean sip = 0;
   double temperature = 0;
   static boolean pulled_out = 0;
 
   if(dip == 1){
-  pulled_out = 0;
-  dipf();
+    pulled_out = 0;
+    dipf();
+  } 
+  else if (dip == 0 && pulled_out == 0) {
+    pulled_out = 1;
+    myservo.write(OUT_ANGLE);
   }
-  else if(dip == 0 && pulled_out == 0){
-	pulled_out = 1;
-	myservo.write(OUT_ANGLE);
 
-  }
-
- 
-
-  
   int now = millis();
   
   if((now - wifiTimer) > WIFI_DELAY) {
-     sip= getSips();
+    sip= getSips();
       
-      temperature = getTemperature();
+    temperature = getTemperature();
     
     
-      Serial.print("Temperature: ");
-      Serial.println(temperature);
-      Serial.print("sip:");
-      Serial.println(sip);
+    Serial.print("Temperature: ");
+    Serial.println(temperature);
+    Serial.print("sip:");
+    Serial.println(sip);
       
-      delay(100);
+    delay(100);
       
-      HTTPClient http;
+    HTTPClient http;
     
     
     if (WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
-     wifiTimer = now;
-     HTTPClient http;   
+      wifiTimer = now;
+      HTTPClient http;   
+      
+      http.begin("http://10.42.0.1:3000/cup/temp");  //Specify destination for HTTP request
+      http.addHeader("Content-Type", "application/json");             //Specify content-type header
    
-     http.begin("http://10.42.0.1:3000/cup/temp");  //Specify destination for HTTP request
-     http.addHeader("Content-Type", "application/json");             //Specify content-type header
+      int httpResponseCode = http.POST(String("{\"temp\":")+temperature + "}");   //Send the actual POST request
    
-     int httpResponseCode = http.POST(String("{\"temp\":")+temperature + "}");   //Send the actual POST request
-   
-     if(httpResponseCode>0){
-   
+      if (httpResponseCode>0){
         String response = http.getString();                       //Get the response to the request
    
         Serial.println(httpResponseCode);   //Print return code
         Serial.println(response);           //Print request answer
    
-     }else{
+     } else {
    
         Serial.print("Error on sending POST: ");
         Serial.println(httpResponseCode);
@@ -122,18 +116,12 @@ void loop(){
    
      http.end();  //Free resources
    
-    }else{
+    } else {
    
       Serial.println("Error in WiFi connection");   
    
     }
   }
- 
- 
-
-
-
-
 }
 
 
@@ -142,7 +130,6 @@ boolean getSips(){
   int8_t y;
   int8_t z;
   float ax,ay,az;
-
 
   accelemeter.getXYZ(&x,&y,&z);
 
@@ -157,37 +144,6 @@ boolean getSips(){
     return 0;
   }
   return 0;
-
-  
-
-
-
-  
-  
-//  double xa = doubleMap(x, 0, 64, 0, 2*PI);
-//  double ya = doubleMap(y, 0, 64, 0, 2*PI);
-//  double za = doubleMap(z, 0, 64, 0, 2*PI);
-//
-//  Serial.println("     cos  \t sin");
-//  Serial.print("x = ");
-//  Serial.print(cos(xa));
-//  Serial.print("\t");
-//  Serial.print(sin(xa));
-//  Serial.println(); 
-//
-//  Serial.print("y = ");
-//  Serial.print(cos(ya));
-//  Serial.print("\t");
-//  Serial.print(sin(ya));
-//  Serial.println(); 
-//
-//  Serial.print("z = ");
-//  Serial.print(cos(za));
-//  Serial.print("\t");
-//  Serial.print(sin(za));
-//  Serial.println(); 
-    
-
 }
 
 
@@ -195,12 +151,6 @@ double getTemperature(void){
   int sensorValue = analogRead(TEMP_PIN);
   double Vout = (3.300) * sensorValue/ 4096.0;
   return (Vout-TEMP_COEFF)/0.005;  
-}
-
-
-double doubleMap(double x, double in_min, double in_max, double out_min, double out_max)
-{
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 
