@@ -1,32 +1,29 @@
 #include <Servo.h>
 #include <Wire.h>
 #include <WiFi.h>
+#include <HTTPClient.h>
 #include "MMA7660.h"
 
 
 #define TEMP_PIN 33
 #define SERVO_PIN 25
 
-#define UP_ANGLE 160
-#define DOWN_ANGLE 60
-
+#define UP_ANGLE 70
+#define DOWN_ANGLE 140
+#define OUT_ANGLE 30
 #define TEMP_COEFF 1.045
+
+#define WIFI_DELAY 1000
 
 #define HTTP_PORT 3000
 
 MMA7660 accelemeter;
 Servo myservo; 
 
-int time2 = millis();
-int dip_delay = 2000;
+int dip_delay = 1000;
 
 boolean dip = 0;
 boolean servo_position = 0;
-
-
-
-boolean tilt = 0;
-boolean sip = 0;
 
 
 const char* ssid     = "NSA-data-collection-van-#42";
@@ -62,79 +59,91 @@ void setup() {
 }
 
 void loop(){
-  
+  static int wifiTimer = millis();
+
+  boolean sip = 0;
+  double temperature = 0;
+  static boolean pulled_out = 0;
 
   if(dip == 1){
-  dipf();
-  }
-  
-  getAngels();
-  if(( y > 10 || y < 40) && tilt == 0){
-    tilt = 1;
-    sip = 1;
-  } else if(( y < 10 || y > 40 ) && tilt == 1){
-    tilt = 0;
-    sip = 0;
+    pulled_out = 0;
+    dipf();
+  } 
+  else if (dip == 0 && pulled_out == 0) {
+    pulled_out = 1;
+    myservo.write(OUT_ANGLE);
   }
 
-
-
-  Serial.print("Temperature: ");
-  Serial.println(getTemperature());
-  delay(100);
+  int now = millis();
   
-  WiFiClient client;
-  if (!client.connect("10.42.0.1", HTTP_PORT)) {
-    Serial.println("connection failed");
-    return;
+  if((now - wifiTimer) > WIFI_DELAY) {
+    sip= getSips();
+      
+    temperature = getTemperature();
+    
+    
+    Serial.print("Temperature: ");
+    Serial.println(temperature);
+    Serial.print("sip:");
+    Serial.println(sip);
+      
+    delay(100);
+      
+    HTTPClient http;
+    
+    
+    if (WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
+      wifiTimer = now;
+      HTTPClient http;   
+      
+      http.begin("http://10.42.0.1:3000/cup/temp");  //Specify destination for HTTP request
+      http.addHeader("Content-Type", "application/json");             //Specify content-type header
+   
+      int httpResponseCode = http.POST(String("{\"temp\":")+temperature + "}");   //Send the actual POST request
+   
+      if (httpResponseCode>0){
+        String response = http.getString();                       //Get the response to the request
+   
+        Serial.println(httpResponseCode);   //Print return code
+        Serial.println(response);           //Print request answer
+   
+     } else {
+   
+        Serial.print("Error on sending POST: ");
+        Serial.println(httpResponseCode);
+   
+     }
+   
+     http.end();  //Free resources
+   
+    } else {
+   
+      Serial.println("Error in WiFi connection");   
+   
+    }
   }
-  
-  String url = "/cup/temp";
-  
-  client.print(String("POST ") + url + " HTTP/1.1\r\n" +
-                 "Host: " + host + "\r\n" +
-                 "Connection: close\r\n\r\n");
-  
-  
-              
-
-
-
-
 }
 
 
-void getAngels(){
+boolean getSips(){
   int8_t x;
   int8_t y;
   int8_t z;
   float ax,ay,az;
-  accelemeter.getXYZ(&x,&y,&z);
-  
-//  double xa = doubleMap(x, 0, 64, 0, 2*PI);
-//  double ya = doubleMap(y, 0, 64, 0, 2*PI);
-//  double za = doubleMap(z, 0, 64, 0, 2*PI);
-//
-//  Serial.println("     cos  \t sin");
-//  Serial.print("x = ");
-//  Serial.print(cos(xa));
-//  Serial.print("\t");
-//  Serial.print(sin(xa));
-//  Serial.println(); 
-//
-//  Serial.print("y = ");
-//  Serial.print(cos(ya));
-//  Serial.print("\t");
-//  Serial.print(sin(ya));
-//  Serial.println(); 
-//
-//  Serial.print("z = ");
-//  Serial.print(cos(za));
-//  Serial.print("\t");
-//  Serial.print(sin(za));
-//  Serial.println(); 
-    
 
+  accelemeter.getXYZ(&x,&y,&z);
+
+    
+  static boolean tilt = 0;
+
+  if(( y > 10 && y < 40) && tilt == 0){
+    tilt = 1;
+    return 1;
+  } else if(( y < 10 || y > 40 ) && tilt == 1){
+    tilt = 0;
+    return 0;
+  }
+  return 0;
 }
 
 
@@ -145,23 +154,17 @@ double getTemperature(void){
 }
 
 
-double doubleMap(double x, double in_min, double in_max, double out_min, double out_max)
-{
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
-
-
 
 void dipf() {
-
+  static int time2 = millis();
   int now = millis();
   
   if(now - time2 > dip_delay ){
     if(servo_position == 1){
-    myservo.write(DOWN_ANGLE);
+    myservo.write(UP_ANGLE);
     servo_position = 0;
    } else if(servo_position == 0){
-    myservo.write(UP_ANGLE);
+    myservo.write(DOWN_ANGLE);
     servo_position = 1;
    }
   time2 = now;
