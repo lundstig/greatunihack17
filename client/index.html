@@ -2,33 +2,29 @@
 <html lang="en">
 <head>
 	<title>IOCup</title>
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<link rel="stylesheet" type="text/css" href="style.css">
-	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-	<link href="https://fonts.googleapis.com/css?family=Jura" rel="stylesheet">
+
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+	<link rel="stylesheet" type="text/css" href="css/framework.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<link href="https://fonts.googleapis.com/css?family=Jura" rel="stylesheet">
+	<script type="text/javascript" src="https://cdn.plot.ly/plotly-1.5.0.min.js"></script>
+  <script src="js/graphs.js" defer=true></script>
+
 </head>
 <body>
 	<h3 class="when">Today<h3>
-		<div class="container-fluid">
-			<div class="row">
-				<div class="col-md-12 figure-flex">
-					<img class="fig" src="http://via.placeholder.com/350x150">
-					<img class="fig" src="http://via.placeholder.com/350x150">
-					<img class="fig" src="http://via.placeholder.com/350x150">
-				</div>
-			</div>
-		</div>
+	<div class="figure-flex">
+			<div class="fig" id="graph1"></div>
+			<div class="fig" id="graph2"></div>
+	</div>
+
 	<h3 class="when">This Week<h3>
-		<div class="container-fluid">
-			<div class="row">
-				<div class="col-md-12 figure-flex">
-					<img class="fig" src="http://via.placeholder.com/350x150">
-					<img class="fig" src="http://via.placeholder.com/350x150">
-					<img class="fig" src="http://via.placeholder.com/350x150">
-				</div>
-			</div>
-		</div>
+	<div class="figure-flex">
+			<div class="fig" id="graph3"></div>
+			<div class="fig" id="graph4"></div>
+	</div>
 </body>
 </html>
