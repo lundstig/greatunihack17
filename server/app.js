@@ -22,8 +22,14 @@ app.post('/cup/temp', function(req, res) {
   res.end('ok');
 });
 
-app.get('/cup/sip', function(req, res) {
-  res.json({something: yes});
+app.get('/cup/temp/history', function(req, res) {
+  res.json({
+    history: {1: 70, 2: 78, 10: 60, 13: 55, 15: 50, 25: 45}
+  });
+});
+
+app.get('/cup/sips', function(req, res) {
+  res.json({timestamps: [1, 2, 3, 4, 5, 7, 9]});
 });
 
 app.post('/cup/sip', function(req, res) {
