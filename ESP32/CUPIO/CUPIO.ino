@@ -1,6 +1,7 @@
 #include <Servo.h>
 #include <Wire.h>
 #include <WiFi.h>
+#include <HTTPClient.h>
 #include "MMA7660.h"
 
 
@@ -22,11 +23,6 @@ int dip_delay = 2000;
 
 boolean dip = 0;
 boolean servo_position = 0;
-
-
-
-boolean tilt = 0;
-boolean sip = 0;
 
 
 const char* ssid     = "NSA-data-collection-van-#42";
@@ -62,25 +58,23 @@ void setup() {
 }
 
 void loop(){
-  
+  boolean sip = 0;
+  double temperature = 0;
 
   if(dip == 1){
   dipf();
   }
   
-  getAngels();
-  if(( y > 10 || y < 40) && tilt == 0){
-    tilt = 1;
-    sip = 1;
-  } else if(( y < 10 || y > 40 ) && tilt == 1){
-    tilt = 0;
-    sip = 0;
-  }
-
+  sip = getSips();
+  
+  temperature = getTemperature();
 
 
   Serial.print("Temperature: ");
-  Serial.println(getTemperature());
+  Serial.println(temperature);
+  Serial.print("sip:");
+  Serial.println(sip);
+  
   delay(100);
   
   WiFiClient client;
@@ -95,7 +89,7 @@ void loop(){
                  "Host: " + host + "\r\n" +
                  "Connection: close\r\n\r\n");
   
-  
+  delay(1000);
               
 
 
@@ -104,12 +98,32 @@ void loop(){
 }
 
 
-void getAngels(){
+boolean getSips(){
   int8_t x;
   int8_t y;
   int8_t z;
   float ax,ay,az;
+
+
   accelemeter.getXYZ(&x,&y,&z);
+
+    
+  static boolean tilt = 0;
+
+  if(( y > 10 && y < 40) && tilt == 0){
+    tilt = 1;
+    return 1;
+  } else if(( y < 10 || y > 40 ) && tilt == 1){
+    tilt = 0;
+    return 0;
+  }
+  return 0;
+
+  
+
+
+
+  
   
 //  double xa = doubleMap(x, 0, 64, 0, 2*PI);
 //  double ya = doubleMap(y, 0, 64, 0, 2*PI);
