@@ -8,9 +8,9 @@
 #define TEMP_PIN 33
 #define SERVO_PIN 25
 
-#define UP_ANGLE 160
+#define UP_ANGLE 120
 #define DOWN_ANGLE 60
-
+#define OUT_ANGLE 50
 #define TEMP_COEFF 1.045
 
 #define HTTP_PORT 3000
@@ -18,7 +18,6 @@
 MMA7660 accelemeter;
 Servo myservo; 
 
-int time2 = millis();
 int dip_delay = 2000;
 
 boolean dip = 0;
@@ -60,12 +59,19 @@ void setup() {
 void loop(){
   boolean sip = 0;
   double temperature = 0;
+  static boolean pulled_out = 1;
 
   if(dip == 1){
+  pulled_out = 0;
   dipf();
   }
-  
-  sip = getSips();
+  else if(dip == 0 && pulled_out == 0){
+	pulled_out = 1;
+	myservo.write(OUT_ANGLE);
+
+  }
+
+  sip= getSips();
   
   temperature = getTemperature();
 
@@ -167,7 +173,7 @@ double doubleMap(double x, double in_min, double in_max, double out_min, double 
 
 
 void dipf() {
-
+  static int time2 = millis();
   int now = millis();
   
   if(now - time2 > dip_delay ){
