@@ -6,20 +6,21 @@
 
 #define TEMP_PIN 33
 #define SERVO_PIN 25
+#define UP_ANGLE 160
+#define DOWN_ANGLE 60
 
 MMA7660 accelemeter;
 Servo myservo; 
 
 int time2 = millis();
 int dip_delay = 2000;
-int up = 120;
-int down = 20;
+
 boolean dip = 0;
 boolean servo_position = 0;
 
 
 const char* ssid     = "NSA-data-collection-van-#42";
-const char* password = "sheeting stunt masonry auntie digestion pates";
+const char* password = "cupio2017";
 
 
 void setup() {
@@ -53,13 +54,15 @@ void loop(){
   dipf();
   }
   Serial.println(time2);
+  getAngels();
+  delay(100);
 
 
 
 }
 
 
-void getAngels(int *xa, int *ya, int *za){
+void getAngels(){
   int8_t x;
   int8_t y;
   int8_t z;
@@ -69,11 +72,11 @@ void getAngels(int *xa, int *ya, int *za){
   
   
   Serial.print("x = ");
-    Serial.println(map(x,0,64,0,360)); 
+    Serial.println(x); 
     Serial.print("y = ");
-    Serial.println(map(y,0,64,0,360));   
+    Serial.println(y);   
     Serial.print("z = ");
-    Serial.println(map(z,0,64,0,360));
+    Serial.println(z);
 
 }
 
@@ -95,10 +98,10 @@ void dipf() {
   
   if(now - time2 > dip_delay ){
     if(servo_position == 1){
-    myservo.write(down);
+    myservo.write(DOWN_ANGLE);
     servo_position = 0;
    } else if(servo_position == 0){
-    myservo.write(up);
+    myservo.write(UP_ANGLE);
     servo_position = 1;
    }
   time2 = now;
