@@ -1,5 +1,7 @@
 var baseUrl = "http://" + location.host + "/";
 
+
+
 window.onload = function(){
   console.log("Hello bitchS")
   initTempData();
@@ -9,7 +11,23 @@ window.onload = function(){
     refreshSipData();
     
   }, 1 * 1000);
-
+  document.getElementById('auto-dip').onchange = function(e){
+    if(this.checked){
+      document.getElementById('manual-dip-div').hidden = true;
+      httpPostAsync(baseUrl + "cup/commands", "{\"autodip\":true, \"dip\":false}", function(){})
+    } else {
+      document.getElementById('manual-dip-div').hidden = false;
+      httpPostAsync(baseUrl + "cup/commands", "{\"autodip\":true, \"dip\":" + document.getElementById('manual-dip').checked + "}", function(){})
+    }
+  }
+  document.getElementById('manual-dip').onchange = function(e){
+    if(this.checked){
+      httpPostAsync(baseUrl + "cup/commands", "{\"autodip\":false, \"dip\":true}", function(){})
+    } else {
+      httpPostAsync(baseUrl + "cup/commands", "{\"autodip\":false, \"dip\":false}", function(){})
+    }
+  
+  }
 }
 
 
@@ -22,6 +40,18 @@ function httpGetAsync(theUrl, callback)
     }
     xmlHttp.open("GET", theUrl, true); // true for asynchronous
     xmlHttp.send(null);
+}
+
+function httpPostAsync(theUrl, data, callback)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            callback(xmlHttp.responseText);
+    }
+    xmlHttp.open("POST", theUrl, true); // true for asynchronous
+    xmlHttp.setRequestHeader("Content-type", "application/json");
+    xmlHttp.send(data);
 }
 
 
@@ -75,6 +105,11 @@ function refreshTempData() {
     var xs = [];
     var ys = [];
     
+    
+    if(!data.autodip){
+      document.getElementById('auto-dip').checked = false;
+    }
+    
     var tempHistory = document.getElementById('graph1');
     //console.log(tempHistory.data[0].x)
     data.data.forEach(function(obj,i) {
@@ -122,7 +157,7 @@ function initSipData(){
     var ys = [];
     
     var tempHistory = document.getElementById('graph2');
-    console.log(data)
+    //console.log(data)
     data.sips.forEach(function(obj) {
       var dateD = new Date(parseInt(obj)) ;
       xs.push(dateD);
@@ -159,7 +194,7 @@ function refreshSipData(){
     var ys = [];
     
     var tempHistory = document.getElementById('graph2');
-    console.log(data)
+    //console.log(data)
     data.sips.forEach(function(obj,i) {
       var dateD = new Date(parseInt(obj)) ;
       if(tempHistory.data[0].x.map(Number).indexOf(+dateD) != -1){

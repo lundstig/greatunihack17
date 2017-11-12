@@ -4,11 +4,16 @@ const express = require('express');
 const app = express();
 const LastN = 20;
 const THRESHOLD = 20;
+const DippingTime = 2 * 60 * 1000; 
 
 var sips = [];
 var temps = [];
 var lastNtemps=[];
+
 var dipping = false;
+var autodip = false;
+var autodipEnd = -1000;
+var forceDipping = false;
 
 Array.prototype.simpleSMA = function(N) {
   return this.map(function(x, i, v) {
@@ -86,20 +91,23 @@ app.use(express.json());
 // Allow access to website
 app.use(express.static('../client'))
 
-app.get('/cup/temp', function(req, res) {
-  res.json({temp: 9001, ts: Date.now()});
-});
 
 app.post('/cup/temp', function(req, res) {
   temps.push([Date.now(), req.body.temp]);
   res.end('ok');
-  if (req.body.temp > 40) {
-    dipping = true;
-  } else {
-    dipping = false;
-  }
+  updateDipping();
 });
 
+function updateDipping() {
+  if (temps.length >= 2) {
+    var pastTemp = pastTemp[Math.min(0, temps.length - 10)];
+    var tempNow = temps[temps.length - 1];
+    if (tempNow > 60 && tempNow - pastTemp > 20) {
+      autodipEnd = Date.now() + DippingTime;
+    }
+  }
+  dipping = forceDipping || Date.now() < autodipEnd;
+}
 
 app.get('/cup/temp/history', function(req, res) {
   // Return data from last 10 minutes
@@ -111,7 +119,8 @@ app.get('/cup/temp/history', function(req, res) {
   
   var data_to_send = {
     data: movingAverage(data,LastN),
-    reg: null
+    reg: null,
+    autodip: autodip
   } 
   
   if(data.length > LastN){
@@ -120,11 +129,6 @@ app.get('/cup/temp/history', function(req, res) {
   res.json(data_to_send);
 });
 
-app.get('/cup/temp/historytest', function(req, res) {
-  res.json({
-    history: {1: 70, 2: 78, 10: 60, 13: 55, 15: 50, 25: 45}
-  });
-});
 
 app.get('/cup/sips/history', function(req, res) {
   // Return data from last 10 minutes
@@ -135,9 +139,6 @@ app.get('/cup/sips/history', function(req, res) {
   });
 });
 
-app.get('/cup/sips/historytest', function(req, res) {
-  res.json({timestamps: [1, 2, 3, 4, 5, 7, 9]});
-});
 
 app.post('/cup/sip', function(req, res) {
   sips.push(Date.now());
@@ -145,7 +146,22 @@ app.post('/cup/sip', function(req, res) {
 });
 
 app.get('/cup/commands', function(req, res) {
+  updateDipping();
   res.json({dipping: dipping});
+});
+
+app.post('/cup/commands', function(req, res){
+  if(req.body.autodip)
+    autodip = true;
+  else
+    autodip = false;
+  if(req.body.dip){
+    forceDipping = true;
+  } else {
+    forceDipping = false;
+  }
+  res.end('ok');
+  console.log(autodip, forceDipping);
 });
 
 app.listen(3000, function() {
