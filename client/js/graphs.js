@@ -2,8 +2,7 @@ var baseUrl = "http://" + location.host + "/";
 
 var desiredTemp = 60;
 
-window.onload = function(){
-  console.log("Hello bitchS")
+window.onload = function() {
   initTempData();
   initSipData();
   setInterval(function() {
@@ -130,7 +129,14 @@ function refreshTempData() {
       document.getElementById('infoText').hidden = false;
       var timeToEnd = (desiredTemp-data.reg.coeffs[1])/data.reg.coeffs[0] ;
       
-      document.getElementById('teaTime').innerHTML = Math.floor(timeToEnd/60*10)/10;
+      var teaTime = Math.floor(timeToEnd/60*10)/10;
+      var teaTimeText;
+      if (teaTime < 0)
+        teaTimeText = "Your tea is ready to drink!";
+      else
+        teaTimeText = "Your tea should be ready in " + teaTime + " minutes."
+      document.getElementById('teaTime').innerHTML = teaTimeText;
+
       document.getElementById('coeffA').innerHTML = data.reg.coeffs[0]
       document.getElementById('coeffB').innerHTML = data.reg.coeffs[1];
       document.getElementById('r2').innerHTML = data.reg.r2;
