@@ -1,7 +1,7 @@
 var baseUrl = "http://" + location.host + "/";
-
+var audio = new Audio('Tea-ready.wav');
 var desiredTemp = 60;
-
+var played = false;
 window.onload = function() {
   initTempData();
   initSipData();
@@ -29,6 +29,7 @@ window.onload = function() {
   }
   document.getElementById('submit').onclick = function(){
     desiredTemp = document.getElementById('temp-input').value;
+    played = false;
   }
 }
 
@@ -123,18 +124,28 @@ function refreshTempData() {
       x: [xs],
       y: [ys]
     };
+
+    
     
 
     if(data.reg != null){
       document.getElementById('infoText').hidden = false;
-      var timeToEnd = (desiredTemp-data.reg.coeffs[1])/data.reg.coeffs[0] ;
+      var timeToEnd = Math.log(desiredTemp/data.reg.coeffs[0])/data.reg.coeffs[1];
       
       var teaTime = Math.floor(timeToEnd/60*10)/10;
       var teaTimeText;
-      if (teaTime < 0)
+      if (teaTime <= 0 && !played)  {
         teaTimeText = "Your tea is ready to drink!";
-      else
+        if (!played) {
+          played = true;
+          alert("Your tea is ready!");
+        }
+        audio = 0;
+        
+      } else {
         teaTimeText = "Your tea should be ready in " + teaTime + " minutes."
+        
+      }
       document.getElementById('teaTime').innerHTML = teaTimeText;
 
       document.getElementById('coeffA').innerHTML = data.reg.coeffs[0]

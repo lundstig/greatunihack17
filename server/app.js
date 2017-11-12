@@ -37,7 +37,8 @@ function lastSpikeRegression(data){
   }
   if(i > LastN*2){
     var sliced = data.slice(i)
-    
+    sliced = sliced.slice(sliced.length - Math.min(sliced.length, 100));
+    console.log(sliced);
     var firstD = sliced[0][0];
     sliced.forEach((v,j)=>{
       sliced[j][0] -= firstD;
@@ -46,7 +47,7 @@ function lastSpikeRegression(data){
     })
     //console.log(sliced)
     var desiredTemp = 50;
-    var res = regression.linear(sliced,{precision:10});
+    var res = regression.exponential(sliced,{precision:10});
   
     return {
       coeffs: res.equation,
