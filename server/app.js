@@ -3,7 +3,7 @@ const regression = require('regression');
 
 const express = require('express');
 const app = express();
-const LastN = 10;
+const LastN = 20;
 const THRESHOLD = 20;
 
 var sips = [];
