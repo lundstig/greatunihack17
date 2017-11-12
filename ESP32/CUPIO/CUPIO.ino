@@ -190,10 +190,10 @@ boolean getSips(){
 
   static boolean tilt = 0;
 
-  if(( y > 10 && y < 40) && tilt == 0){
+  if(( y > 10 && y < 40) /*&& tilt == 0*/){
     tilt = 1;
     return 1;
-  } else if(( y < 10 || y > 40 ) && tilt == 1){
+  } else if(( y < 10 || y > 40 ) /*&& tilt == 1*/){
     tilt = 0;
     return 0;
   }
