@@ -128,7 +128,7 @@ function refreshTempData() {
 
     if(data.reg != null){
       document.getElementById('infoText').hidden = false;
-      var timeToEnd = Math.log(desiredTemp/data.reg.coeffs[0])/data.reg.coeffs[1];
+      var timeToEnd = (desiredTemp-data.reg.coeffs[1])/data.reg.coeffs[0] ;
       
       document.getElementById('teaTime').innerHTML = Math.floor(timeToEnd/60*10)/10;
       document.getElementById('coeffA').innerHTML = data.reg.coeffs[0]

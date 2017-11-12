@@ -46,7 +46,7 @@ function lastSpikeRegression(data){
     })
     //console.log(sliced)
     var desiredTemp = 50;
-    var res = regression.exponential(sliced,{precision:10});
+    var res = regression.linear(sliced,{precision:10});
   
     return {
       coeffs: res.equation,
