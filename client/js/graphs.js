@@ -82,7 +82,7 @@ function initTempData() {
     var tempHistory = document.getElementById('graph1');
   
     
-    data.forEach(function(obj) {
+    data.data.forEach(function(obj) {
       var dateD = new Date(parseInt(obj[0])) ;
       xs.push(dateD);
       ys.push(obj[1]);
@@ -120,7 +120,7 @@ function refreshData() {
     
     var tempHistory = document.getElementById('graph1');
     //console.log(tempHistory.data[0].x)
-    data.forEach(function(obj,i) {
+    data.data.forEach(function(obj,i) {
       var dateD = new Date(parseInt(obj[0])) ;
       if(tempHistory.data[0].x.map(Number).indexOf(+dateD) != -1){
         return;
@@ -146,6 +146,12 @@ function refreshData() {
       }
       
     }
+    var desiredTemp = 68;
+    var timeToEnd = Math.log(desiredTemp/data.reg.coeffs[0])/data.reg.coeffs[1];
+    
+    document.getElementById('teaTime').innerHTML = Math.floor(timeToEnd/60*10)/10;
+    document.getElementById('coeffA').innerHTML = data.reg.coeffs[0]
+    document.getElementById('coeffB').innerHTML = data.reg.coeffs[1];
     
     
 
