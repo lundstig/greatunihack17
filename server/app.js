@@ -8,7 +8,10 @@ const THRESHOLD = 20;
 var sips = [];
 var temps = [];
 var lastNtemps=[];
+var inSequence = false;
 var dipping = false;
+var autodip = false;
+var dippingtime = 5000;
 
 Array.prototype.simpleSMA = function(N) {
   return this.map(function(x, i, v) {
@@ -93,10 +96,19 @@ app.get('/cup/temp', function(req, res) {
 app.post('/cup/temp', function(req, res) {
   temps.push([Date.now(), req.body.temp]);
   res.end('ok');
-  if (req.body.temp > 40) {
-    dipping = true;
-  } else {
-    dipping = false;
+  if(autodip && !inSequence){
+    if (!dipping && req.body.temp > 23) {
+      inSequence = true;
+      dipping = true;
+      setTimeout(dippingtime, function(){
+        dipping = false;
+        autodip = false;
+        
+      })
+    } else if(inSequence && req.body.temp < 21) {
+      inSequence = false;
+      dipping = false;
+    }
   }
 });
 
@@ -111,7 +123,8 @@ app.get('/cup/temp/history', function(req, res) {
   
   var data_to_send = {
     data: movingAverage(data,LastN),
-    reg: null
+    reg: null,
+    autodip: autodip
   } 
   
   if(data.length > LastN){
@@ -146,6 +159,20 @@ app.post('/cup/sip', function(req, res) {
 
 app.get('/cup/commands', function(req, res) {
   res.json({dipping: dipping});
+});
+
+app.post('/cup/commands', function(req, res){
+  if(req.body.autodip)
+    autodip = true;
+  else
+    autodip = false;
+  if(req.body.dip){
+    dipping = true;
+  } else {
+    dipping = false;
+  }
+  res.end('ok');
+  console.log(autodip, dipping);
 });
 
 app.listen(3000, function() {
