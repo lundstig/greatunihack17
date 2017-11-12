@@ -91,9 +91,6 @@ app.use(express.json());
 // Allow access to website
 app.use(express.static('../client'))
 
-app.get('/cup/temp', function(req, res) {
-  res.json({temp: 9001, ts: Date.now()});
-});
 
 app.post('/cup/temp', function(req, res) {
   temps.push([Date.now(), req.body.temp]);
@@ -132,11 +129,6 @@ app.get('/cup/temp/history', function(req, res) {
   res.json(data_to_send);
 });
 
-app.get('/cup/temp/historytest', function(req, res) {
-  res.json({
-    history: {1: 70, 2: 78, 10: 60, 13: 55, 15: 50, 25: 45}
-  });
-});
 
 app.get('/cup/sips/history', function(req, res) {
   // Return data from last 10 minutes
@@ -147,9 +139,6 @@ app.get('/cup/sips/history', function(req, res) {
   });
 });
 
-app.get('/cup/sips/historytest', function(req, res) {
-  res.json({timestamps: [1, 2, 3, 4, 5, 7, 9]});
-});
 
 app.post('/cup/sip', function(req, res) {
   sips.push(Date.now());
