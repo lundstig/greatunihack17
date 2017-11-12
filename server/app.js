@@ -1,6 +1,10 @@
+const regression = require('regression');
+
+
 const express = require('express');
 const app = express();
-const LastN = 5;
+const LastN = 10;
+const THRESHOLD = 20;
 
 var sips = [];
 var temps = [];
@@ -18,6 +22,39 @@ Array.prototype.simpleSMA = function(N) {
   });
 };
 
+function lastSpikeRegression(data){
+  //console.log(data)
+  var i = data.length-1;
+  var last = data[i][1];
+  while(i >= LastN && (last - data[i-LastN][1]) < THRESHOLD){
+    i--;
+    last = data[i][1];
+  }
+  if(i > LastN*2){
+    var sliced = data.slice(i)
+    
+    var firstD = sliced[0][0];
+    sliced.forEach((v,j)=>{
+      sliced[j][0] -= firstD;
+      sliced[j][0]/=1000;
+      
+    })
+    //console.log(sliced)
+    var desiredTemp = 50;
+    var res = regression.exponential(sliced,{precision:10});
+  
+    return {
+      coeffs: res.equation,
+      r2: res.r2
+    }
+    //console.log(coeffs)
+    //console.log();
+  } else {
+    //console.log("No Spike")
+    return null;
+  }
+  
+}
 
 function movingAverage(data,N){
   var dates = [];
@@ -72,9 +109,16 @@ app.get('/cup/temp/history', function(req, res) {
 
   var data = temps.filter(time => time[0] > now - duration);
   //data = data.map(el=>return [el[0]])
-  data = movingAverage(data,LastN);
-
-  res.json(data);
+  
+  var data_to_send = {
+    data: movingAverage(data,LastN),
+    reg: null
+  } 
+  
+  if(data.length > LastN){
+    data_to_send.reg = lastSpikeRegression(JSON.parse(JSON.stringify(data)));
+  }
+  res.json(data_to_send);
 });
 
 app.get('/cup/temp/historytest', function(req, res) {

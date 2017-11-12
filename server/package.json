@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Krarl/greatunihack17#readme",
   "dependencies": {
-    "express": "^4.16.1"
+    "express": "^4.16.1",
+    "regression": "^2.0.0"
   }
 }
