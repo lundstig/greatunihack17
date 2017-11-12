@@ -4,7 +4,8 @@ const express = require('express');
 const app = express();
 const LastN = 20;
 const THRESHOLD = 20;
-const DippingTime = 2 * 60 * 1000; 
+
+var  DippingTime =   5 * 60 * 1000; 
 
 var sips = [];
 var temps = [];
@@ -100,13 +101,13 @@ app.post('/cup/temp', function(req, res) {
 
 function updateDipping() {
   if (temps.length >= 2) {
-    var pastTemp = pastTemp[Math.min(0, temps.length - 10)];
-    var tempNow = temps[temps.length - 1];
-    if (tempNow > 60 && tempNow - pastTemp > 20) {
+    var pastTemp = temps[Math.max(0, temps.length - 10)][1];
+    var tempNow = temps[temps.length - 1][1];
+    if (tempNow > 40 && tempNow - pastTemp > 20) {
       autodipEnd = Date.now() + DippingTime;
     }
   }
-  dipping = forceDipping || Date.now() < autodipEnd;
+  dipping = forceDipping || (autodip && Date.now() < autodipEnd);
 }
 
 app.get('/cup/temp/history', function(req, res) {
@@ -160,6 +161,8 @@ app.post('/cup/commands', function(req, res){
   } else {
     forceDipping = false;
   }
+  if(req.body.dipTime > 0)
+    DippingTime = req.body.dipTime
   res.end('ok');
   console.log(autodip, forceDipping);
 });
