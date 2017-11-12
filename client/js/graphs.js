@@ -1,5 +1,18 @@
 var baseUrl = "http://" + location.host + "/";
 
+window.onload = function(){
+  console.log("Hello bitchS")
+  initTempData();
+  setInterval(function() {
+    refreshData();
+  }, 1 * 1000);
+
+}
+
+
+
+
+
 function httpGetAsync(theUrl, callback)
 {
     var xmlHttp = new XMLHttpRequest();
@@ -11,34 +24,29 @@ function httpGetAsync(theUrl, callback)
     xmlHttp.send(null);
 }
 
-refreshData();
-setInterval(function() {
-  refreshData();
-}, 5 * 1000);
 
-tempHistory = document.getElementById('graph2');
-Plotly.plot(tempHistory,
+
+/*
+tempHistory = document.getElementById('graph1');
+Plotly.newPlot(tempHistory,
   [{
     x: [1, 2, 3, 5, 9],
     y: [3, 4, 5, 7, 12],
     line: {shape: 'spline'}
-  }],
-  {
-    line: {shape: 'spline'}
-  }
-);
+  }], layout);
+
+
+Plotly.extendTraces(tempHistory, {
+  x: [[10,11,12,13,14]],
+  y: [[3, 4, 5, 7, 13]]
+}, [0]);
+
+
+
+
 
 tempHistory = document.getElementById('graph3');
-Plotly.plot(tempHistory,
-  [{
-    x: [1, 2, 3, 5, 9],
-    y: [3, 4, 5, 7, 12],
-    line: {shape: 'spline'}
-  }],
-  {
-    line: {shape: 'spline'}
-  }
-);
+
 tempHistory = document.getElementById('graph4');
 Plotly.plot(tempHistory,
   [{
@@ -50,6 +58,58 @@ Plotly.plot(tempHistory,
     line: {shape: 'spline'}
   }
 );
+*/
+// 
+// function runningAverage(data){
+//   var output = [];
+//   var lastN = [];
+//   var Nn = 5;
+//   Object.keys(data.temps).forEach(function(time){
+//     if(lastN.length < Nn){
+//       lastN.push(data.temps)
+//     }
+// 
+//   });
+// }
+
+
+function initTempData() {
+  httpGetAsync(baseUrl + "cup/temp/history", function(text) {
+    var data = JSON.parse(text);
+    var xs = [];
+    var ys = [];
+    
+    var tempHistory = document.getElementById('graph1');
+  
+    
+    data.forEach(function(obj) {
+      var dateD = new Date(parseInt(obj[0])) ;
+      xs.push(dateD);
+      ys.push(obj[1]);
+    });
+
+    var data_update = [{
+      x: xs,
+      y: ys,
+      line: {shape: 'spline'}
+    }];
+    
+    var layout = {
+      title: 'Temperature',
+      xaxis: {
+        title: 'Time',
+        showgrid: true
+      },
+      yaxis: {
+        title: 'Temperature',
+        showgrid: true
+      }
+      
+    }
+    
+    Plotly.newPlot(tempHistory,data_update,layout);
+  });
+}
 
 
 function refreshData() {
@@ -57,23 +117,38 @@ function refreshData() {
     var data = JSON.parse(text);
     var xs = [];
     var ys = [];
-    Object.keys(data.temps).forEach(function(time) {
-      var dateD = new Date(parseInt(time)) ;
+    
+    var tempHistory = document.getElementById('graph1');
+    //console.log(tempHistory.data[0].x)
+    data.forEach(function(obj,i) {
+      var dateD = new Date(parseInt(obj[0])) ;
+      if(tempHistory.data[0].x.map(Number).indexOf(+dateD) != -1){
+        return;
+      }
       xs.push(dateD);
-      ys.push(data.temps[time]);
+      ys.push(obj[1]);
     });
 
-    tempHistory = document.getElementById('graph1');
-    Plotly.purge(tempHistory);
-    Plotly.plot(tempHistory,
-      [{
-        x: xs,
-        y: ys,
-        line: {shape: 'spline'}
-      }],
-      {
-        line: {shape: 'spline'}
+    var data_update = {
+      x: [xs],
+      y: [ys]
+    };
+    
+    var layout = {
+      title: 'Temperature',
+      xaxis: {
+        title: 'Time',
+        showgrid: true
+      },
+      yaxis: {
+        title: 'Temperature',
+        showgrid: true
       }
-    );
+      
+    }
+    
+    
+
+    Plotly.extendTraces(tempHistory, data_update, [0]);
   });
 }
