@@ -15,7 +15,9 @@
 
 #define WIFI_DELAY 1000
 
-#define HTTP_PORT 3000
+
+#define IP_ADDR "10.42.0.1"
+#define HTTP_PORT "3000"
 
 MMA7660 accelemeter;
 Servo myservo; 
@@ -77,8 +79,9 @@ void loop(){
   int now = millis();
   
   if((now - wifiTimer) > WIFI_DELAY) {
+    wifiTimer = now;
     sip= getSips();
-      
+    
     temperature = getTemperature();
     
     
@@ -88,40 +91,92 @@ void loop(){
     Serial.println(sip);
       
     delay(100);
-      
-    HTTPClient http;
     
+  
+    dip = getDipping(getData(IP_ADDR, HTTP_PORT, "/cup/commands"));
+    postData(IP_ADDR, HTTP_PORT, "/cup/temp", String("{\"temp\":")+temperature + "}");
     
-    if (WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
-      wifiTimer = now;
-      HTTPClient http;   
-      
-      http.begin("http://10.42.0.1:3000/cup/temp");  //Specify destination for HTTP request
-      http.addHeader("Content-Type", "application/json");             //Specify content-type header
-   
-      int httpResponseCode = http.POST(String("{\"temp\":")+temperature + "}");   //Send the actual POST request
-   
-      if (httpResponseCode>0){
-        String response = http.getString();                       //Get the response to the request
-   
-        Serial.println(httpResponseCode);   //Print return code
-        Serial.println(response);           //Print request answer
-   
-     } else {
-   
-        Serial.print("Error on sending POST: ");
-        Serial.println(httpResponseCode);
-   
-     }
-   
-     http.end();  //Free resources
-   
-    } else {
-   
-      Serial.println("Error in WiFi connection");   
-   
-    }
+    if(sip)
+      postData(IP_ADDR, HTTP_PORT, "/cup/sip", "");
+    
   }
+}
+
+
+boolean getDipping(String json){
+  int location = json.indexOf("dipping") + 9;
+  
+  if(json.substring(location,location+1) == String("t")){
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+
+String getData(String address, String port, String url){
+  HTTPClient http;
+  String response = "";
+  
+  if (WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
+    
+    HTTPClient http;   
+    
+    http.begin("http://" + address + ":" + port + url);  //Specify destination for HTTP request
+    http.addHeader("Content-Type", "application/json");             //Specify content-type header
+ 
+    int httpResponseCode = http.GET();   //Send the actual POST request
+ 
+    if (httpResponseCode>0){
+      response = http.getString();                       //Get the response to the request
+ 
+      //Serial.println(httpResponseCode);   //Print return code
+      //Serial.println(response);           //Print request answer
+ 
+   } else {
+      Serial.print("Error on sending GET: ");
+      Serial.println(httpResponseCode);
+   }
+   http.end();  //Free resources
+  } else {
+    Serial.println("Error in WiFi connection");   
+  }
+  return response;
+}
+
+void postData(String address, String port, String url, String data){
+  HTTPClient http;
+  if (WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
+    
+    HTTPClient http;   
+    
+    http.begin("http://" + address + ":" + port + url);  //Specify destination for HTTP request
+    http.addHeader("Content-Type", "application/json");             //Specify content-type header
+ 
+    int httpResponseCode = http.POST(data);   //Send the actual POST request
+ 
+    if (httpResponseCode>0){
+      //String response = http.getString();                       //Get the response to the request
+ 
+      //Serial.println(httpResponseCode);   //Print return code
+      //Serial.println(response);           //Print request answer
+ 
+   } else {
+ 
+      Serial.print("Error on sending POST: ");
+      Serial.println(httpResponseCode);
+ 
+   }
+ 
+   http.end();  //Free resources
+ 
+  } else {
+ 
+    Serial.println("Error in WiFi connection");   
+ 
+  }
+  
+  
 }
 
 
@@ -129,11 +184,10 @@ boolean getSips(){
   int8_t x;
   int8_t y;
   int8_t z;
-  float ax,ay,az;
+
 
   accelemeter.getXYZ(&x,&y,&z);
 
-    
   static boolean tilt = 0;
 
   if(( y > 10 && y < 40) && tilt == 0){
