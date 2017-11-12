@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>IOCup</title>
+	<title>Cup.io</title>
 
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +15,7 @@
 
 </head>
 <body>
-	<h1>IOCup</h1>
+	<h1>Cup.io</h1>
 <br><br>
 	<div><div style= "width:250pt;height:34px;float:left;font-size:25px;">Activate Automatic Dipping :</div>
 	<div style = "float: left;"><label class="switch"><input type="checkbox" id="auto-dip"><div class="slider round"><!--ADDED HTML --><span class="on">ON</span><span class="off">OFF</span><!--END--></div></label> </div> <br><br><br>
@@ -25,12 +25,14 @@
 <div><br><br><br><br>
 
 	<h3 class="when">Your Cup Live<h3>
+	<div id="infoText" hidden> 
 	<p class="">
 	Tea should be drinkable in <span id="teaTime"></span> minutes
 </p>
 	<p>
 		Tea equation: T = <span id="coeffA"></span> e^(<span id="coeffB"></span>*t)
 	</p>
+</div>
 	<div class="figure-flex">
 			<div class="fig" id="graph1"></div>
 			<div class="fig" id="graph2"></div>

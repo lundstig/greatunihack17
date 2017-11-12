@@ -13,9 +13,6 @@ window.onload = function(){
 }
 
 
-
-
-
 function httpGetAsync(theUrl, callback)
 {
     var xmlHttp = new XMLHttpRequest();
@@ -27,53 +24,6 @@ function httpGetAsync(theUrl, callback)
     xmlHttp.send(null);
 }
 
-
-
-/*
-tempHistory = document.getElementById('graph1');
-Plotly.newPlot(tempHistory,
-  [{
-    x: [1, 2, 3, 5, 9],
-    y: [3, 4, 5, 7, 12],
-    line: {shape: 'spline'}
-  }], layout);
-
-
-Plotly.extendTraces(tempHistory, {
-  x: [[10,11,12,13,14]],
-  y: [[3, 4, 5, 7, 13]]
-}, [0]);
-
-
-
-
-
-tempHistory = document.getElementById('graph3');
-
-tempHistory = document.getElementById('graph4');
-Plotly.plot(tempHistory,
-  [{
-    x: [1, 2, 3, 5, 9],
-    y: [3, 4, 5, 7, 12],
-    line: {shape: 'spline'}
-  }],
-  {
-    line: {shape: 'spline'}
-  }
-);
-*/
-// 
-// function runningAverage(data){
-//   var output = [];
-//   var lastN = [];
-//   var Nn = 5;
-//   Object.keys(data.temps).forEach(function(time){
-//     if(lastN.length < Nn){
-//       lastN.push(data.temps)
-//     }
-// 
-//   });
-// }
 
 
 function initTempData() {
@@ -143,6 +93,7 @@ function refreshTempData() {
     
 
     if(data.reg != null){
+      document.getElementById('infoText').hidden = false;
       var desiredTemp = 68;
       var timeToEnd = Math.log(desiredTemp/data.reg.coeffs[0])/data.reg.coeffs[1];
       
@@ -150,7 +101,7 @@ function refreshTempData() {
       document.getElementById('coeffA').innerHTML = data.reg.coeffs[0]
       document.getElementById('coeffB').innerHTML = data.reg.coeffs[1];
     } else {
-      
+      document.getElementById('infoText').hidden = true;
     }
     
     var update = {

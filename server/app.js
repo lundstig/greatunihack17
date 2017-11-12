@@ -1,6 +1,5 @@
 const regression = require('regression');
 
-
 const express = require('express');
 const app = express();
 const LastN = 20;
