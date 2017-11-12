@@ -152,17 +152,21 @@ app.get('/cup/commands', function(req, res) {
 });
 
 app.post('/cup/commands', function(req, res){
-  if(req.body.autodip)
-    autodip = true;
-  else
-    autodip = false;
-  if(req.body.dip){
-    forceDipping = true;
-  } else {
-    forceDipping = false;
+  if(typeof req.body.autodip != "undefined") {
+    if(req.body.autodip)
+      autodip = true;
+    else
+      autodip = false;
+    }
+  if(typeof req.body.dip != "undefined") {
+    if(req.body.dip){
+      forceDipping = true;
+    } else {
+      forceDipping = false;
+    }
   }
-  if(req.body.dipTime > 0)
-    DippingTime = req.body.dipTime
+  
+  
   res.end('ok');
   console.log(autodip, forceDipping);
 });

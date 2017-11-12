@@ -1,6 +1,6 @@
 var baseUrl = "http://" + location.host + "/";
 
-
+var desiredTemp = 60;
 
 window.onload = function(){
   console.log("Hello bitchS")
@@ -27,6 +27,9 @@ window.onload = function(){
       httpPostAsync(baseUrl + "cup/commands", "{\"autodip\":false, \"dip\":false}", function(){})
     }
   
+  }
+  document.getElementById('submit').onclick = function(){
+    desiredTemp = document.getElementById('temp-input').value;
   }
 }
 
@@ -125,7 +128,6 @@ function refreshTempData() {
 
     if(data.reg != null){
       document.getElementById('infoText').hidden = false;
-      var desiredTemp = 60;
       var timeToEnd = Math.log(desiredTemp/data.reg.coeffs[0])/data.reg.coeffs[1];
       
       document.getElementById('teaTime').innerHTML = Math.floor(timeToEnd/60*10)/10;
