@@ -3,22 +3,26 @@ const app = express();
 
 var sips = [];
 var temps = {};
+var dipping = false;
 
 // Parse POSTed data as json
 app.use(express.json());
 
-app.get('/', function(req, res) {
-  res.send('<html><h1>Super cup</h1></html>');
-});
-
+// Allow access to website
+app.use(express.static('../client'))
 
 app.get('/cup/temp', function(req, res) {
-  res.json({temp: 1000, ts: Date.now()});
+  res.json({temp: 9001, ts: Date.now()});
 });
 
 app.post('/cup/temp', function(req, res) {
   temps[Date.now()] = req.body.temp;
   res.end('ok');
+  if (req.body.temp > 40) {
+    dipping = true;
+  } else {
+    dipping = false;
+  }
 });
 
 
@@ -61,7 +65,7 @@ app.post('/cup/sip', function(req, res) {
 });
 
 app.get('/cup/commands', function(req, res) {
-  res.json({dipping: false});
+  res.json({dipping: dipping});
 });
 
 app.listen(3000, function() {
