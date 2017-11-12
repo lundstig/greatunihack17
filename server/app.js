@@ -1,9 +1,48 @@
 const express = require('express');
 const app = express();
+const LastN = 5;
 
 var sips = [];
-var temps = {};
+var temps = [];
+var lastNtemps=[];
 var dipping = false;
+
+Array.prototype.simpleSMA = function(N) {
+  return this.map(function(x, i, v) {
+    if (i < N - 1) return NaN;
+    return v.filter(function(x2, i2) {
+      return i2 <= i && i2 > i - N;
+    }).reduce(function(a, b) {
+      return a + b;
+    }) / N;
+  });
+};
+
+
+function movingAverage(data,N){
+  var dates = [];
+  var temps = [];
+  data.forEach(obj=>{
+    dates.push(obj[0]);
+    temps.push(obj[1]);
+    
+  })
+  var res = [];
+  
+  tempsAvg = temps.simpleSMA(N);
+
+  tempsAvg.forEach((val, i)=>{
+    if(isNaN(val)){
+      return;
+      res.push([dates[i],temps[i]])
+    } else {
+      res.push([dates[i],val])
+    }
+  });
+
+  return res
+  
+}
 
 // Parse POSTed data as json
 app.use(express.json());
@@ -16,7 +55,7 @@ app.get('/cup/temp', function(req, res) {
 });
 
 app.post('/cup/temp', function(req, res) {
-  temps[Date.now()] = req.body.temp;
+  temps.push([Date.now(), req.body.temp]);
   res.end('ok');
   if (req.body.temp > 40) {
     dipping = true;
@@ -31,13 +70,11 @@ app.get('/cup/temp/history', function(req, res) {
   var now = Date.now();
   var duration = 10 * 60 * 1000;
 
-  data = Object.keys(temps).filter(time => time > now - duration).
-    reduce((ret, time) => {
-      ret[time] = temps[time]
-      return ret;
-    }, {});
-  
-  res.json({temps: data});
+  var data = temps.filter(time => time[0] > now - duration);
+  //data = data.map(el=>return [el[0]])
+  data = movingAverage(data,LastN);
+
+  res.json(data);
 });
 
 app.get('/cup/temp/historytest', function(req, res) {
