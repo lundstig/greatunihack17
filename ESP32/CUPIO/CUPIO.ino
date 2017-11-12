@@ -13,7 +13,7 @@
 #define OUT_ANGLE 30
 #define TEMP_COEFF 1.045
 
-#define WIFI_DELAY 1000
+#define WIFI_DELAY 500
 
 
 #define IP_ADDR "10.42.0.1"
