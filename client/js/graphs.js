@@ -1,4 +1,4 @@
-var baseUrl = "http://10.42.0.150:3000/";
+var baseUrl = "http://" + location.host + "/";
 
 function httpGetAsync(theUrl, callback)
 {
