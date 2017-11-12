@@ -58,7 +58,8 @@ function refreshData() {
     var xs = [];
     var ys = [];
     Object.keys(data.temps).forEach(function(time) {
-      xs.push(time);
+      var dateD = new Date(parseInt(time)) ;
+      xs.push(dateD);
       ys.push(data.temps[time]);
     });
 
