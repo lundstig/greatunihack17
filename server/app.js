@@ -4,14 +4,16 @@ const express = require('express');
 const app = express();
 const LastN = 20;
 const THRESHOLD = 20;
+const DippingTime = 2 * 60 * 1000; 
 
 var sips = [];
 var temps = [];
 var lastNtemps=[];
-var inSequence = false;
+
 var dipping = false;
 var autodip = false;
-var dippingtime = 5000;
+var autodipEnd = -1000;
+var forceDipping = false;
 
 Array.prototype.simpleSMA = function(N) {
   return this.map(function(x, i, v) {
@@ -93,22 +95,19 @@ app.use(express.static('../client'))
 app.post('/cup/temp', function(req, res) {
   temps.push([Date.now(), req.body.temp]);
   res.end('ok');
-  if(autodip && !inSequence){
-    if (!dipping && req.body.temp > 23) {
-      inSequence = true;
-      dipping = true;
-      setTimeout(dippingtime, function(){
-        dipping = false;
-        autodip = false;
-        
-      })
-    } else if(inSequence && req.body.temp < 21) {
-      inSequence = false;
-      dipping = false;
-    }
-  }
+  updateDipping();
 });
 
+function updateDipping() {
+  if (temps.length >= 2) {
+    var pastTemp = pastTemp[Math.min(0, temps.length - 10)];
+    var tempNow = temps[temps.length - 1];
+    if (tempNow > 60 && tempNow - pastTemp > 20) {
+      autodipEnd = Date.now() + DippingTime;
+    }
+  }
+  dipping = forceDipping || Date.now() < autodipEnd;
+}
 
 app.get('/cup/temp/history', function(req, res) {
   // Return data from last 10 minutes
@@ -147,6 +146,7 @@ app.post('/cup/sip', function(req, res) {
 });
 
 app.get('/cup/commands', function(req, res) {
+  updateDipping();
   res.json({dipping: dipping});
 });
 
@@ -156,12 +156,12 @@ app.post('/cup/commands', function(req, res){
   else
     autodip = false;
   if(req.body.dip){
-    dipping = true;
+    forceDipping = true;
   } else {
-    dipping = false;
+    forceDipping = false;
   }
   res.end('ok');
-  console.log(autodip, dipping);
+  console.log(autodip, forceDipping);
 });
 
 app.listen(3000, function() {
