@@ -11,17 +11,10 @@ function httpGetAsync(theUrl, callback)
     xmlHttp.send(null);
 }
 
-tempHistory = document.getElementById('graph1');
-Plotly.plot(tempHistory,
-  [{
-    x: [1, 3, 11, 26, 27],
-    y: [1, 2, 4, 8, 16],
-    line: {shape: 'spline'}
-  }],
-  {
-    line: {shape: 'spline'}
-  }
-);
+refreshData();
+setInterval(function() {
+  refreshData();
+}, 5 * 1000);
 
 tempHistory = document.getElementById('graph2');
 Plotly.plot(tempHistory,
@@ -70,6 +63,7 @@ function refreshData() {
     });
 
     tempHistory = document.getElementById('graph1');
+    Plotly.purge(tempHistory);
     Plotly.plot(tempHistory,
       [{
         x: xs,

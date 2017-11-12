@@ -8,10 +8,8 @@ var dipping = false;
 // Parse POSTed data as json
 app.use(express.json());
 
-app.get('/', function(req, res) {
-  res.send('<html><h1>Super cup</h1></html>');
-});
-
+// Allow access to website
+app.use(express.static('../client'))
 
 app.get('/cup/temp', function(req, res) {
   res.json({temp: 9001, ts: Date.now()});
