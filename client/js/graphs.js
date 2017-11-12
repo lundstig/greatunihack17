@@ -105,11 +105,7 @@ function refreshTempData() {
     var xs = [];
     var ys = [];
     
-    
-    if(!data.autodip){
-      document.getElementById('auto-dip').checked = false;
-    }
-    
+  
     var tempHistory = document.getElementById('graph1');
     //console.log(tempHistory.data[0].x)
     data.data.forEach(function(obj,i) {
@@ -129,12 +125,13 @@ function refreshTempData() {
 
     if(data.reg != null){
       document.getElementById('infoText').hidden = false;
-      var desiredTemp = 68;
+      var desiredTemp = 60;
       var timeToEnd = Math.log(desiredTemp/data.reg.coeffs[0])/data.reg.coeffs[1];
       
       document.getElementById('teaTime').innerHTML = Math.floor(timeToEnd/60*10)/10;
       document.getElementById('coeffA').innerHTML = data.reg.coeffs[0]
       document.getElementById('coeffB').innerHTML = data.reg.coeffs[1];
+      document.getElementById('r2').innerHTML = data.reg.r2;
     } else {
       document.getElementById('infoText').hidden = true;
     }
